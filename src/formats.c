@@ -421,12 +421,37 @@ static void UNUSED rewind_pipe(FILE * fp)
       defined _ISO_STDIO_ISO_H || defined __sgi
   fp->_ptr = fp->_base;
 #else
-  /* To fix this #error, either simply remove the #error line and live without
-   * file-type detection with pipes, or add support for your compiler in the
-   * lines above.  Test with cat monkey.wav | ./sox --info - */
-  #error FIX NEEDED HERE
-  #define NO_REWIND_PIPE
-  (void)fp;
+struct MUSL_FILE { // _IO_FILE in src/internal/stdio_impl.h
+        unsigned flags;
+        unsigned char *rpos, *rend;
+        int (*close)(FILE *);
+        unsigned char *wend, *wpos;
+        unsigned char *mustbezero_1;
+        unsigned char *wbase;
+        size_t (*read)(FILE *, unsigned char *, size_t);
+        size_t (*write)(FILE *, const unsigned char *, size_t);
+        off_t (*seek)(FILE *, off_t, int);
+        unsigned char *buf;
+        size_t buf_size;
+        FILE *prev, *next;
+        int fd;
+        int pipe_pid;
+        long lockcount;
+        short dummy3;
+        signed char mode;
+        signed char lbf;
+        volatile int lock;
+        volatile int waiters;
+        void *cookie;
+        off_t off;
+        char *getln_buf;
+        void *mustbezero_2;
+        unsigned char *shend;
+        off_t shlim, shcnt;
+        FILE *prev_locked, *next_locked;
+        struct __locale_struct *locale;
+};
+  ((struct MUSL_FILE*)fp)->rpos -= PIPE_AUTO_DETECT_SIZE;
 #endif
 }
 
